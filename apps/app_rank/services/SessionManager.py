@@ -17,7 +17,8 @@ class SessionManagerService:
         session_uuid = SessionManagerService.create_session_id(session_type)
         session = Session.objects.create(
             session_uuid=session_uuid,
-            status=SessionStatus.NOT_STARTED
+            status=SessionStatus.NOT_STARTED,
+            type=session_type
         )
         return session.id
 
@@ -36,7 +37,7 @@ class SessionManagerService:
     def update_session(self, session_id, status, details=None):
         try:
             self.__update_session_status(session_id=session_id, status=status, details=details)
-        except SessionIDDoesNotExist as e:
+        except SessionIDDoesNotExist(session_id=session_id) as e:
             ErrorLog.objects.create(
                 error_message=str(e),
                 session_id=session_id

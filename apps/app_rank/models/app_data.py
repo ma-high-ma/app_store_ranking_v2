@@ -1,6 +1,6 @@
 from django.db import models
 
-from apps.app_rank.models import ShopifyApp
+from apps.app_rank.models.shopify_app import ShopifyApp
 
 
 class AppData(models.Model):

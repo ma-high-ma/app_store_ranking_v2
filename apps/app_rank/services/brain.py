@@ -1,6 +1,7 @@
 from apps.app_rank.constants import SessionType
 from apps.app_rank.models import Keyword
 from apps.app_rank.processors.html_browse_page_processor import HTMLBrowsePageProcessor
+from apps.app_rank.processors.rank_delta_processor import RankDeltaProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
 from apps.app_rank.services.html_browse_page_scraper import HTMLBrowsePageScraper
 
@@ -20,4 +21,7 @@ class Brain:
         # Process HTML app store pages
         session_id = SessionManagerService.create_session(SessionType.HTML_PROCESSOR)
         HTMLBrowsePageProcessor(session_id=session_id, keyword=keyword).process()
-        
+
+        # Process Rank delta against last scraping session based on the keyword
+        session_id = SessionManagerService.create_session(SessionType.RANK_DELTA_PROCESSOR)
+        RankDeltaProcessor(session_id=session_id, keyword=keyword).process()
