@@ -9,7 +9,7 @@ from apps.app_rank.services.html_browse_page_scraper import HTMLBrowsePageScrape
 class Brain:
     def logic(self):
         # Global App Rank
-        keyword = Keyword.objects.get_or_create(keyword='global')
+        keyword, created = Keyword.objects.get_or_create(keyword='global')
 
         # Scrape HTML of browse apps page
         session_id = SessionManagerService.create_session(SessionType.HTML_SCRAPER)
@@ -20,8 +20,8 @@ class Brain:
 
         # Process HTML app store pages
         session_id = SessionManagerService.create_session(SessionType.HTML_PROCESSOR)
-        HTMLBrowsePageProcessor(session_id=session_id, keyword=keyword).process()
+        HTMLBrowsePageProcessor(session_id=session_id, keyword_id=keyword.id).process()
 
         # Process Rank delta against last scraping session based on the keyword
         session_id = SessionManagerService.create_session(SessionType.RANK_DELTA_PROCESSOR)
-        RankDeltaProcessor(session_id=session_id, keyword=keyword).process()
+        RankDeltaProcessor(session_id=session_id, keyword_id=keyword.id).process()

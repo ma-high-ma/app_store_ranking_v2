@@ -8,9 +8,9 @@ from apps.app_rank.services.SessionManager import SessionManagerService
 
 
 class HTMLBrowsePageProcessor:
-    def __init__(self, session_id, keyword):
+    def __init__(self, session_id, keyword_id):
         self.session_id = session_id
-        self.keyword = keyword
+        self.keyword_id = keyword_id
 
     def __get_shopify_app_obj(self, app_handle, app_card):
         shopify_app = ShopifyApp.objects.filter(app_handle=app_handle).first()
@@ -27,7 +27,7 @@ class HTMLBrowsePageProcessor:
     def process_each_page(self, page_no, html_page_obj):
         print('page_no = ', page_no)
 
-        soup = BeautifulSoup(html_page_obj.content)
+        soup = BeautifulSoup(html_page_obj.content, features="html.parser")
         all_app_cards_of_the_page = soup.find_all('div', {'class': 'ui-app-card'})
 
         for app_card in all_app_cards_of_the_page:
@@ -44,7 +44,7 @@ class HTMLBrowsePageProcessor:
             AppRank.objects.create(
                 shopify_app=self.__get_shopify_app_obj(app_handle, app_card),
                 rank=rank,
-                keyword=self.keyword,
+                keyword_id=self.keyword_id,
                 session_id=self.session_id
             )
 
@@ -63,4 +63,5 @@ class HTMLBrowsePageProcessor:
                     'details': f'Error occurred while processing page no = {each_page.page_no}'
                 }
                 SessionManagerService().process_failed_session(self.session_id, error_msg)
+                return
         SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)

@@ -33,7 +33,7 @@ class AppRankAdmin(admin.ModelAdmin):
 
 @admin.register(ScrapedHTML)
 class ScrapedHTMLAdmin(admin.ModelAdmin):
-    list_display = ('id', 'session', 'page_no', 'app_handle', 'content', 'created_at')
+    list_display = ('id', 'session', 'page_no', 'app_handle', 'created_at')
 
 
 @admin.register(RankDelta)
@@ -43,5 +43,5 @@ class RankDeltaAdmin(admin.ModelAdmin):
 
 @admin.register(ErrorLog)
 class ErrorLogAdmin(admin.ModelAdmin):
-    list_display = ('id', 'error_message', 'session', 'created_at')
+    list_display = ('id', 'error_message', 'session_id', 'created_at')
     ordering = ('-created_at',)

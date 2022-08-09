@@ -55,6 +55,7 @@ class HTMLBrowsePageScraper:
                 }
                 SessionManagerService().process_failed_session(self.session_id, error_msg)
                 print('EXCEPTION: ', str(e))
+                return
 
         SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)
         print('SCRAPING COMPLETE')
