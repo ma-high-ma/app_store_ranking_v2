@@ -23,7 +23,7 @@ class AppDataAdmin(admin.ModelAdmin):
 
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'session_id', 'status', 'details', 'modified_at', 'created_at')
+    list_display = ('id', 'session_uuid', 'status', 'details', 'modified_at', 'created_at')
 
 
 @admin.register(AppRank)
