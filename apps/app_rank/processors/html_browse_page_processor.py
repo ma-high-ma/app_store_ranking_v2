@@ -2,15 +2,18 @@ from urllib import parse
 
 from bs4 import BeautifulSoup
 
-from apps.app_rank.constants import SessionStatus
+from apps.app_rank.constants import SessionStatus, ScrapedHTMLStatus
 from apps.app_rank.models import ScrapedHTML, ShopifyApp, AppRank
+from apps.app_rank.processors.html_app_page_processor import HTMLAppPageProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
+from apps.app_rank.services.html_app_page_scraper import HTMLAppPageScraper
 
 
 class HTMLBrowsePageProcessor:
     def __init__(self, session_id, keyword_id):
         self.session_id = session_id
         self.keyword_id = keyword_id
+        self.app_ranks = []
 
     def __get_shopify_app_obj(self, app_handle, app_card):
         shopify_app = ShopifyApp.objects.filter(app_handle=app_handle).first()
@@ -22,7 +25,13 @@ class HTMLBrowsePageProcessor:
                 name=app_name,
                 developed_by=developed_by
             )
+            self.create_app_data(app_handle)
         return shopify_app
+
+    def create_app_data(self, app_handle):
+        HTMLAppPageScraper(self.session_id, app_handle).scrape_page()
+        HTMLAppPageProcessor(self.session_id, app_handle).process_single_app_page()
+        ScrapedHTML.objects.get(app_handle=app_handle).delete()
 
     def process_each_page(self, page_no, html_page_obj):
         print('page_no = ', page_no)
@@ -41,22 +50,27 @@ class HTMLBrowsePageProcessor:
             query_params = parse.parse_qs(parsed_url.query)
             rank += int(query_params['surface_intra_position'][0])
 
-            AppRank.objects.create(
+            app_rank_obj = AppRank(
                 shopify_app=self.__get_shopify_app_obj(app_handle, app_card),
                 rank=rank,
                 keyword_id=self.keyword_id,
                 session_id=self.session_id
             )
+            self.app_ranks.append(app_rank_obj)
 
     def process(self):
         SessionManagerService().update_session(self.session_id, SessionStatus.IN_PROGRESS)
         all_pages = ScrapedHTML.objects.all()
         for each_page in all_pages:
             try:
+                each_page.status = ScrapedHTMLStatus.IN_PROGRESS
+                each_page.save()
                 self.process_each_page(
                     page_no=each_page.page_no,
                     html_page_obj=each_page
                 )
+                each_page.status = ScrapedHTMLStatus.PROCESSED
+                each_page.save()
             except Exception as e:
                 error_msg = {
                     'Exception': str(e),
@@ -64,4 +78,5 @@ class HTMLBrowsePageProcessor:
                 }
                 SessionManagerService().process_failed_session(self.session_id, error_msg)
                 return
+        AppRank.objects.bulk_create(self.app_ranks)
         SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)

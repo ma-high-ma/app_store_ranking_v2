@@ -18,7 +18,7 @@ class KeywordAdmin(admin.ModelAdmin):
 @admin.register(AppData)
 class AppDataAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'shopify_app', 'reviews_rating', 'reviews_count', 'signifiers', 'filter_keywords', 'created_at')
+        'id', 'shopify_app', 'reviews_rating', 'reviews_count', 'signifiers', 'categories', 'created_at')
 
 
 @admin.register(Session)
@@ -33,7 +33,7 @@ class AppRankAdmin(admin.ModelAdmin):
 
 @admin.register(ScrapedHTML)
 class ScrapedHTMLAdmin(admin.ModelAdmin):
-    list_display = ('id', 'session', 'page_no', 'app_handle', 'created_at')
+    list_display = ('id', 'session', 'page_no', 'app_handle', 'status', 'created_at')
 
 
 @admin.register(RankDelta)

@@ -9,5 +9,5 @@ class AppRank(models.Model):
     shopify_app = models.ForeignKey(ShopifyApp, on_delete=models.CASCADE)
     keyword = models.ForeignKey(Keyword, on_delete=models.CASCADE)
     rank = models.FloatField()
-    session = models.ForeignKey(Session, on_delete=models.CASCADE)
+    session = models.ForeignKey(Session, on_delete=models.DO_NOTHING, null=True)
     created_at = models.DateField(auto_now_add=True)

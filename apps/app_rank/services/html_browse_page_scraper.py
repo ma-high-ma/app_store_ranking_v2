@@ -3,6 +3,7 @@ import os
 from scrapingbee import ScrapingBeeClient
 
 from apps.app_rank.constants import SessionStatus
+from apps.app_rank.exceptions import PageNotScrapedSuccessfully
 from apps.app_rank.models import ScrapedHTML
 from apps.app_rank.services.SessionManager import SessionManagerService
 
@@ -10,6 +11,7 @@ from apps.app_rank.services.SessionManager import SessionManagerService
 class HTMLBrowsePageScraper:
     def __init__(self, session_id):
         self.session_id = session_id
+        self.scraped_html_objs = []
 
     def get_client(self):
         try:
@@ -43,12 +45,17 @@ class HTMLBrowsePageScraper:
                 response_object = client.get(
                     url_with_page_no,
                 )
-                ScrapedHTML.objects.create(
+                if response_object.status_code != 200:
+                    raise PageNotScrapedSuccessfully(page_no=page)
+
+                scraped_html_obj = ScrapedHTML(
                     page_no=page,
                     content=response_object.content,
                     session_id=self.session_id
                 )
-            except Exception as e:
+                self.scraped_html_objs.append(scraped_html_obj)
+
+            except (PageNotScrapedSuccessfully, Exception) as e:
                 error_msg = {
                     'Exception': str(e),
                     'details': f'Error occurred while scraping page no = {page}'
@@ -56,7 +63,7 @@ class HTMLBrowsePageScraper:
                 SessionManagerService().process_failed_session(self.session_id, error_msg)
                 print('EXCEPTION: ', str(e))
                 return
-
+        ScrapedHTML.objects.bulk_create(self.scraped_html_objs)
         SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)
         print('SCRAPING COMPLETE')
         return
