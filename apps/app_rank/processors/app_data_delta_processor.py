@@ -18,6 +18,8 @@ class AppDataDeltaProcessor:
             status=SessionStatus.COMPLETED
         ).order_by('-created_at').first()
 
+        print(latest_rank_delta_processor_session)
+
         if latest_rank_delta_processor_session is None:
             raise NoCompletedRankDeltaProcessorFound
 
@@ -25,11 +27,14 @@ class AppDataDeltaProcessor:
         app_handles = rank_delta_objs.values_list(
             'shopify_app_id', flat=True)
 
+        print('app_handles = ', app_handles)
+
         # Delete all scraped HTML entries
         ScrapedHTML.objects.all().delete()
 
         for app_handle in app_handles:
-            HTMLAppPageScraper(session_id, app_handle).scrape_page()
+            HTMLAppPageScraper(self.session_id, app_handle).scrape_page()
+        print('scraping complete')
 
         # Store app data of all apps whose rank have changed
         HTMLAppPageProcessor(session_id=session_id).process_all_app_html_pages()
@@ -38,15 +43,15 @@ class AppDataDeltaProcessor:
         for app_handle in app_handles:
             try:
                 app_data_qs = AppData.objects.filter(shopify_app_id=app_handle).order_by('-created_at')
+                print(app_data_qs)
                 if len(app_data_qs) < 2:
                     raise NoPreviousAppDataPresent(app_handle)
 
                 app_rank_delta_obj = rank_delta_objs.get(shopify_app_id=app_handle)
                 if app_data_qs[0].hash != app_data_qs[1].hash:
                     app_rank_delta_obj.has_app_data_changed = True
-                else:
-                    app_rank_delta_obj.has_app_data_changed = False
-                app_rank_delta_obj.save()
+                    app_rank_delta_obj.save()
+
             except NoPreviousAppDataPresent as e:
                 error_msg = {
                     'Exception': str(e),

@@ -64,8 +64,9 @@ class HTMLAppPageScraper:
             }
             SessionManagerService().process_failed_session(self.session_id, error_msg)
             print('EXCEPTION: ', str(e))
-            raise PageNotScrapedSuccessfully(app_handle=self.app_handle)
-        else:
-            ScrapedHTML.objects.create(app_handle=self.app_handle, content=response_object.content,
-                                       session_id=self.session_id)
-            SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)
+            return
+            # raise PageNotScrapedSuccessfully(app_handle=self.app_handle)
+
+        ScrapedHTML.objects.create(app_handle=self.app_handle, content=response_object.content,
+                                   session_id=self.session_id)
+        SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)

@@ -1,4 +1,4 @@
-from apps.app_rank.constants import SessionStatus
+from apps.app_rank.constants import SessionStatus, SessionType
 from apps.app_rank.exceptions import NoPreviousAppRankForGivenKeyword
 from apps.app_rank.models import AppRank, Session, ShopifyApp, RankDelta
 from apps.app_rank.services.SessionManager import SessionManagerService
@@ -17,7 +17,8 @@ class RankDeltaProcessor:
             'session_id', flat=True).distinct()
         print(session_ids_for_given_keyword)
         session_qs = Session.objects.filter(id__in=session_ids_for_given_keyword,
-                                            status=SessionStatus.COMPLETED).order_by('-created_at')
+                                            status=SessionStatus.COMPLETED,
+                                            type=SessionType.HTML_PROCESSOR).order_by('-created_at')
         print(session_qs)
         if len(session_qs) <= 1:
             raise NoPreviousAppRankForGivenKeyword(keyword=self.keyword_id)
@@ -32,12 +33,12 @@ class RankDeltaProcessor:
                 shopify_app_id=previously_scraped_app.shopify_app_id).first()
 
             if not current_scraped_app:
-                shopify_app = ShopifyApp.objects.get(id=previously_scraped_app.shopify_app_id)
+                shopify_app = ShopifyApp.objects.get(app_handle=previously_scraped_app.shopify_app_id)
                 current_scraped_app = AppRank.objects.create(
                     shopify_app=shopify_app,
                     keyword_id=self.keyword_id,
                     rank=9999,
-                    session_id_id=self.session_id
+                    session_id=self.session_id
                 )
                 print(current_scraped_app)
             if current_scraped_app.rank != previously_scraped_app.rank:
