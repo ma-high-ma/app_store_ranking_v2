@@ -16,15 +16,16 @@ class RankDeltaProcessor:
         session_ids_for_given_keyword = AppRank.objects.filter(keyword_id=self.keyword_id).values_list(
             'session_id', flat=True).distinct()
         print(session_ids_for_given_keyword)
-        session_qs = Session.objects.filter(id__in=session_ids_for_given_keyword,
-                                            status=SessionStatus.COMPLETED,
-                                            type=SessionType.HTML_PROCESSOR).order_by('-created_at')
-        print(session_qs)
-        if len(session_qs) <= 1:
+        prev_completed_session = Session.objects.filter(id__in=session_ids_for_given_keyword,
+                                                        status=SessionStatus.COMPLETED).order_by('-created_at').first()
+        print(prev_completed_session)
+        if not prev_completed_session:
             raise NoPreviousAppRankForGivenKeyword(keyword=self.keyword_id)
 
-        apps_scraped_in_prev_session = AppRank.objects.filter(keyword_id=self.keyword_id, session_id=session_qs[1].id)
-        apps_scraped_in_current_session = AppRank.objects.filter(keyword=self.keyword_id, session_id=session_qs[0].id)
+        apps_scraped_in_prev_session = AppRank.objects.filter(keyword_id=self.keyword_id,
+                                                              session_id=prev_completed_session.id)
+        # apps_scraped_in_current_session = AppRank.objects.filter(keyword=self.keyword_id, session_id=session_qs[0].id)
+        apps_scraped_in_current_session = AppRank.objects.filter(session_id=self.session_id)
         print(apps_scraped_in_current_session)
         print(apps_scraped_in_prev_session)
         for previously_scraped_app in apps_scraped_in_prev_session:
@@ -54,7 +55,8 @@ class RankDeltaProcessor:
 
     def process(self):
         print('inside rank delta process func')
-        SessionManagerService().update_session(self.session_id, SessionStatus.IN_PROGRESS)
+        SessionManagerService().update_session(self.session_id,
+                                               details=f'{SessionType.RANK_DELTA_PROCESSOR} has begun')
         try:
             print('inside try')
             self.__process()
@@ -62,9 +64,11 @@ class RankDeltaProcessor:
             error_msg = {
                 'Exception': str(e),
                 'keyword_id': self.keyword_id,
+                'Location': SessionType.RANK_DELTA_PROCESSOR,
                 'details': f'Error occurred during rank delta processing'
             }
             SessionManagerService().process_failed_session(self.session_id, error_msg)
             return
         RankDelta.objects.bulk_create(self.rank_delta_objs)
-        SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)
+        SessionManagerService().update_session(self.session_id,
+                                               details=f'{SessionType.RANK_DELTA_PROCESSOR} has completed')

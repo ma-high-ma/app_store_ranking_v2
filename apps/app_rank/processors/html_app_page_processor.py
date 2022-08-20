@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 
-from apps.app_rank.constants import SessionStatus
+from apps.app_rank.constants import SessionStatus, ScrapedHTMLStatus
 from apps.app_rank.models import ScrapedHTML, ShopifyApp, AppData
 from apps.app_rank.services.SessionManager import SessionManagerService
 from apps.app_rank.services.basic_utils import BasicUtils
@@ -94,9 +94,13 @@ class HTMLAppPageProcessor:
     def process_single_app_page(self, bulk=False):
         print('processing app = ', self.app_handle)
         categories = self.get_categories_list()
+        print('categories = ', categories)
         signifiers = self.get_signifiers_list()
+        print('signifiers = ', signifiers)
         review = self.get_review_dict()
+        print('review = ', review)
         pricing = self.get_pricing_dict()
+        print('pricing = ', pricing)
 
         res = {
             'shopify_app_id': self.app_handle,
@@ -135,17 +139,22 @@ class HTMLAppPageProcessor:
         else:
             all_app_pages = ScrapedHTML.objects.all()
             for each_app_page in all_app_pages:
+                each_app_page.status = ScrapedHTMLStatus.IN_PROGRESS
+                each_app_page.save()
                 try:
                     self.app_handle = each_app_page.app_handle
                     self.app = ShopifyApp.objects.get(app_handle=self.app_handle)
                     assert self.app_handle is not None
                     self.soup = BeautifulSoup(each_app_page.content, features="html.parser")
                     self.process_single_app_page(bulk=True)
-                    AppData.objects.bulk_create(self.app_data_objs)
+
                 except Exception as e:
                     error_msg = {
                         'Exception': str(e),
                         'details': f'Error occurred while processing app = {self.app_handle}'
                     }
                     SessionManagerService().process_failed_session(self.session_id, error_msg)
+
+            AppData.objects.bulk_create(self.app_data_objs)
+
         SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)

@@ -2,9 +2,8 @@ from apps.app_rank.constants import SessionType, SessionStatus
 from apps.app_rank.exceptions import PageNotScrapedSuccessfully
 from apps.app_rank.models import Keyword, ScrapedHTML, ShopifyApp, Session
 from apps.app_rank.processors.app_data_delta_processor import AppDataDeltaProcessor
+from apps.app_rank.processors.app_rank_processor import AppRankProcessor
 from apps.app_rank.processors.html_app_page_processor import HTMLAppPageProcessor
-from apps.app_rank.processors.html_browse_page_processor import HTMLBrowsePageProcessor
-from apps.app_rank.processors.rank_delta_processor import RankDeltaProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
 from apps.app_rank.services.html_app_page_scraper import HTMLAppPageScraper
 from apps.app_rank.services.html_browse_page_scraper import HTMLBrowsePageScraper
@@ -14,6 +13,7 @@ class Brain:
     def cron_logic(self):
         session_ids = []
         # Global App Rank
+
         keyword, created = Keyword.objects.get_or_create(keyword='global')
 
         # Scrape HTML of browse apps page
@@ -24,15 +24,19 @@ class Brain:
             last_page_no=5
         )
 
-        # Process HTML app store pages
-        session_id = SessionManagerService.create_session(SessionType.HTML_PROCESSOR)
+        session_id = SessionManagerService.create_session(SessionType.APP_RANK_PROCESSOR)
         session_ids.append(session_id)
-        HTMLBrowsePageProcessor(session_id=session_id, keyword_id=keyword.id).process()
+        AppRankProcessor(session_id=session_id, keyword_id=keyword.id).process()
 
-        # Process Rank delta against last scraping session based on the keyword
-        session_id = SessionManagerService.create_session(SessionType.RANK_DELTA_PROCESSOR)
-        session_ids.append(session_id)
-        RankDeltaProcessor(session_id=session_id, keyword_id=keyword.id).process()
+        # # Process HTML app store pages
+        # session_id = SessionManagerService.create_session(SessionType.HTML_PROCESSOR)
+        # session_ids.append(session_id)
+        # HTMLBrowsePageProcessor(session_id=session_id, keyword_id=keyword.id).process()
+        #
+        # # Process Rank delta against last scraping session based on the keyword
+        # session_id = SessionManagerService.create_session(SessionType.RANK_DELTA_PROCESSOR)
+        # session_ids.append(session_id)
+        # RankDeltaProcessor(session_id=session_id, keyword_id=keyword.id).process()
 
         # Process app data delta for apps whose ranks have changed
         session_id = SessionManagerService.create_session(SessionType.APP_DATA_DELTA_PROCESSOR)

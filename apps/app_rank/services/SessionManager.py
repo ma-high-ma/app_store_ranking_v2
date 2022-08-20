@@ -27,17 +27,18 @@ class SessionManagerService:
         session_obj = Session.objects.filter(
             id=session_id
         ).first()
+
         if session_obj is None:
-            raise SessionIDDoesNotExist
+            raise SessionIDDoesNotExist(session_id)
         if details is not None:
-            session_obj.details = details
+            session_obj.details = f'{session_obj.details}, {details}'
         session_obj.status = status
         session_obj.save()
 
-    def update_session(self, session_id, status, details=None):
+    def update_session(self, session_id, status=SessionStatus.IN_PROGRESS, details=None):
         try:
             self.__update_session_status(session_id=session_id, status=status, details=details)
-        except SessionIDDoesNotExist(session_id=session_id) as e:
+        except (SessionIDDoesNotExist, Exception) as e:
             ErrorLog.objects.create(
                 error_message=str(e),
                 session_id=session_id

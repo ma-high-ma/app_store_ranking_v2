@@ -2,7 +2,7 @@ from urllib import parse
 
 from bs4 import BeautifulSoup
 
-from apps.app_rank.constants import SessionStatus, ScrapedHTMLStatus
+from apps.app_rank.constants import ScrapedHTMLStatus, SessionType
 from apps.app_rank.models import ScrapedHTML, ShopifyApp, AppRank
 from apps.app_rank.processors.html_app_page_processor import HTMLAppPageProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
@@ -59,7 +59,8 @@ class HTMLBrowsePageProcessor:
             self.app_ranks.append(app_rank_obj)
 
     def process(self):
-        SessionManagerService().update_session(self.session_id, SessionStatus.IN_PROGRESS)
+        SessionManagerService().update_session(session_id=self.session_id,
+                                               details=f'{SessionType.HTML_PROCESSOR} has begun')
         all_pages = ScrapedHTML.objects.all()
         for each_page in all_pages:
             try:
@@ -74,9 +75,11 @@ class HTMLBrowsePageProcessor:
             except Exception as e:
                 error_msg = {
                     'Exception': str(e),
+                    'Location': SessionType.HTML_PROCESSOR,
                     'details': f'Error occurred while processing page no = {each_page.page_no}'
                 }
                 SessionManagerService().process_failed_session(self.session_id, error_msg)
                 return
         AppRank.objects.bulk_create(self.app_ranks)
-        SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)
+        SessionManagerService().update_session(session_id=self.session_id,
+                                               details=f'{SessionType.HTML_PROCESSOR} has completed')

@@ -20,6 +20,7 @@ class ScrapedHTMLStatus(models.TextChoices):
 class SessionType:
     HTML_SCRAPER = 'html-scraper'
     HTML_PROCESSOR = 'html-processor'
+    APP_RANK_PROCESSOR = 'app-rank-processor'
     RANK_DELTA_PROCESSOR = 'rank-delta-processor'
     APP_DATA_DELTA_PROCESSOR = 'app-data-delta-processor'
     ADHOC_PROCESSOR = 'adhoc-processor'

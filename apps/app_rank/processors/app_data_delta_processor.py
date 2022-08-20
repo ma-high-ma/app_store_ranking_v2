@@ -14,7 +14,7 @@ class AppDataDeltaProcessor:
         session_id = SessionManagerService().update_session(self.session_id, SessionStatus.IN_PROGRESS)
 
         latest_rank_delta_processor_session = Session.objects.filter(
-            type=SessionType.RANK_DELTA_PROCESSOR,
+            type=SessionType.APP_RANK_PROCESSOR,
             status=SessionStatus.COMPLETED
         ).order_by('-created_at').first()
 

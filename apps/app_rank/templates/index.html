@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
+</head>
+<body>
+
+<h1>Check Ranking Delta for an App</h1>
+
+<div id="form_diff">
+    <label for="fname">App Handle</label>
+    <input type="text" id="app_handle" name="app_handle"><br><br>
+
+
+    <label for="start_date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date"><br><br>
+
+    <label for="end_date">End Date:</label>
+    <input type="date" id="end_date" name="end_date"><br><br>
+    <input type="button" value="Submit" onclick="getDiff()">
+
+</div>
+
+<div class="float-container">
+    <div id="random_id" style="width: 500px; height: 500px; float:left;" class="float-child">
+        <canvas id="chart" width="100" height="100"></canvas>
+    </div>
+    <div id="app_data" class="float-child" style="float:right; padding-right: 100px;">
+        <div id="app_data_date"></div>
+        <pre id="json_data">
+
+        </pre>
+
+    </div>
+</div>
+
+
+<script>
+    function getDiff() {
+
+        console.log("get diff is hit");
+        var app_handle = document.getElementById("app_handle").value;
+        var start_date = document.getElementById("start_date").value;
+        var end_date = document.getElementById("end_date").value;
+        var showInfo = "<p>" + app_handle + "</p>";
+        console.log(showInfo);
+
+        var url = 'http://localhost:8000/scraper/app-ranking-response?app_handle=' + app_handle
+            + "&start_date=" + start_date + "&end_date=" + end_date;
+        fetch(url).then(response => response.json())
+            .then(data => {
+                console.log(
+                    'result = ', data.result
+                );
+
+                var result = data.result
+                var labels = [];
+                var ranks = [];
+                for (let i = 0; i < result.length; i++) {
+                    labels[i] = result[i].created_at;
+                    ranks[i] = result[i].rank;
+                }
+
+                console.log('labels = ', labels);
+                console.log('ranks = ', ranks);
+
+                let ctx = document.getElementById("chart").getContext("2d");
+
+                let chart = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Rank Delta",
+                                backgroundColor: "#79AEC8",
+                                fill: false,
+                                borderColor: "#417690",
+                                data: ranks
+                            }
+                        ]
+                    },
+                    options: {
+                        title: {
+                            text: result[0].app_handle,
+                            display: true
+                        },
+                        scales: {
+                            xAxes: [{
+                                display: true,
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Rank'
+                                }
+                            }],
+                            yAxes: [{
+                                display: true,
+                                ticks: {
+                                    beginAtZero: true,
+                                    steps: 10,
+                                    stepValue: 5,
+                                    max: 200
+                                }
+                            }]
+                        }
+                    }
+                });
+
+                console.log(
+                    'app_data = ', data.diff
+                );
+                var app_data_list = data.diff
+                for (let i = 0; i < app_data_list.length; i++) {
+                    console.log("inside for loop")
+                    document.getElementById("app_data_date").innerHTML = "<p>" + app_data_list[i].created_at + "</p"
+                    {#document.getElementById("app_data").innerHTML = "<p>" + app_data_list[i].created_at + "</p"#}
+                    document.getElementById("json_data").textContent = JSON.stringify(app_data_list[i], null, 2)
+                }
+            })
+        console.log(url);
+
+    }
+</script>
+</body>
+
+</html>
+
+{#/scraper/app-ranking/app_store_ranking/static/graph.png#}
