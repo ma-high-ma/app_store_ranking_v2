@@ -10,19 +10,12 @@ from apps.scrapers.html_category_wise_scraper import HTMLCategoryWiseScraper
 
 
 class Brain:
-    def cron_logic(self):
+    def cron_logic(self, keyword_title='global'):
         session_ids = []
         # Global App Rank
 
-        keyword, created = Keyword.objects.get_or_create(keyword='store-management')
-
-        # Scrape HTML of browse apps page
-        # session_id = SessionManagerService.create_session(SessionType.HTML_SCRAPER)
-        # session_ids.append(session_id)
-        # HTMLBrowsePageScraper(session_id).scrape_page(
-        #     start_page_no=1,
-        #     last_page_no=5
-        # )
+        keyword, created = Keyword.objects.get_or_create(keyword=keyword_title)
+        # 'store-management'
 
         session_id = SessionManagerService.create_session(SessionType.HTML_SCRAPER)
         session_ids.append(session_id)
@@ -34,16 +27,6 @@ class Brain:
         session_id = SessionManagerService.create_session(SessionType.APP_RANK_PROCESSOR)
         session_ids.append(session_id)
         AppRankProcessor(session_id=session_id, keyword_id=keyword.id).process()
-
-        # # Process HTML app store pages
-        # session_id = SessionManagerService.create_session(SessionType.HTML_PROCESSOR)
-        # session_ids.append(session_id)
-        # HTMLBrowsePageProcessor(session_id=session_id, keyword_id=keyword.id).process()
-        #
-        # # Process Rank delta against last scraping session based on the keyword
-        # session_id = SessionManagerService.create_session(SessionType.RANK_DELTA_PROCESSOR)
-        # session_ids.append(session_id)
-        # RankDeltaProcessor(session_id=session_id, keyword_id=keyword.id).process()
 
         # Process app data delta for apps whose ranks have changed
         session_id = SessionManagerService.create_session(SessionType.APP_DATA_DELTA_PROCESSOR)

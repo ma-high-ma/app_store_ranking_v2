@@ -42,13 +42,14 @@
 
         console.log("get diff is hit");
         var app_handle = document.getElementById("app_handle").value;
+        var keyword = document.getElementsById("keyword").value;
         var start_date = document.getElementById("start_date").value;
         var end_date = document.getElementById("end_date").value;
-        var showInfo = "<p>" + app_handle + "</p>";
+        var showInfo = "<p>" + app_handle + " " + keyword + "</p>";
         console.log(showInfo);
 
-        var url = 'http://localhost:8000/scraper/app-ranking-response?app_handle=' + app_handle
-            + "&start_date=" + start_date + "&end_date=" + end_date;
+        var url = 'https://shopify-app-store-ranking.herokuapp.com/scraper/app-ranking-response?app_handle=' + app_handle
+            + "&keyword=" + keyword + "&start_date=" + start_date + "&end_date=" + end_date;
         fetch(url).then(response => response.json())
             .then(data => {
                 console.log(

@@ -4,6 +4,7 @@ from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.app_rank.models import Keyword
 from apps.app_rank.services.basic_utils import BasicUtils, get_app_rank_data, get_app_data_diff
 
 
@@ -22,6 +23,8 @@ class AppRankingResponseView(APIView):
     def get(self, request):
         print('HEYYYYYY')
         app_handle = request.GET.get('app_handle')
+        keyword = request.GET.get('keyword')
+        keyword, created = Keyword.objects.get_or_create(keyword=keyword)
         start_date = request.GET.get('start_date', '2022-07-22')
         end_date = request.GET.get('end_date', '2022-07-31')
         print('REQUEST RESPONSE = ', request.GET)
@@ -31,7 +34,8 @@ class AppRankingResponseView(APIView):
         result = get_app_rank_data(
             app_handle=app_handle,
             start_date=start_date,
-            end_date=end_date
+            end_date=end_date,
+            keyword_id=keyword.id
         )
         result = {
             "result": result,

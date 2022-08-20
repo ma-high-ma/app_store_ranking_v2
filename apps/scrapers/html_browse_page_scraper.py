@@ -3,7 +3,7 @@ import os
 from scrapingbee import ScrapingBeeClient
 
 from apps.app_rank.constants import SessionStatus
-from apps.app_rank.exceptions import PageNotScrapedSuccessfully
+from apps.app_rank.exceptions import PageNotScrapedSuccessfully, TaskInterruptedDueToAnException
 from apps.app_rank.models import ScrapedHTML
 from apps.app_rank.services.SessionManager import SessionManagerService
 
@@ -38,6 +38,7 @@ class HTMLBrowsePageScraper:
         self.remove_all_html_objects()
         client = self.get_client()
         url = self.get_url()
+        print('URL = ', url)
         for page in range(start_page_no, last_page_no + 1):
             try:
                 print('page_no=', page)
@@ -62,7 +63,7 @@ class HTMLBrowsePageScraper:
                 }
                 SessionManagerService().process_failed_session(self.session_id, error_msg)
                 print('EXCEPTION: ', str(e))
-                return
+                raise TaskInterruptedDueToAnException
         ScrapedHTML.objects.bulk_create(self.scraped_html_objs)
         SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED)
         print('SCRAPING COMPLETE')

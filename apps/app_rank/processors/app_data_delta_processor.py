@@ -1,5 +1,6 @@
 from apps.app_rank.constants import SessionType, SessionStatus
-from apps.app_rank.exceptions import NoPreviousAppDataPresent, NoCompletedRankDeltaProcessorFound
+from apps.app_rank.exceptions import NoPreviousAppDataPresent, NoCompletedRankDeltaProcessorFound, \
+    TaskInterruptedDueToAnException
 from apps.app_rank.models import Session, RankDelta, ScrapedHTML, AppData
 from apps.app_rank.processors.html_app_page_processor import HTMLAppPageProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
@@ -11,7 +12,7 @@ class AppDataDeltaProcessor:
         self.session_id = session_id
 
     def __process(self):
-        session_id = SessionManagerService().update_session(self.session_id, SessionStatus.IN_PROGRESS)
+        SessionManagerService().update_session(self.session_id)
 
         latest_rank_delta_processor_session = Session.objects.filter(
             type=SessionType.APP_RANK_PROCESSOR,
@@ -37,7 +38,7 @@ class AppDataDeltaProcessor:
         print('scraping complete')
 
         # Store app data of all apps whose rank have changed
-        HTMLAppPageProcessor(session_id=session_id).process_all_app_html_pages()
+        HTMLAppPageProcessor(session_id=self.session_id).process_all_app_html_pages()
 
         # Check if app_data has changed and update AppRank table accordingly
         for app_handle in app_handles:
@@ -72,3 +73,4 @@ class AppDataDeltaProcessor:
                 'details': f'Error occurred during app data delta processing'
             }
             SessionManagerService().process_failed_session(self.session_id, error_msg)
+            raise TaskInterruptedDueToAnException

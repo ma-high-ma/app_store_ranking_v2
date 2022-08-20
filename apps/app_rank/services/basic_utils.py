@@ -6,18 +6,18 @@ from typing import Dict, Any
 from apps.app_rank.models import AppRank, AppData
 
 
-def get_app_rank_data(app_handle, start_date, end_date):
+def get_app_rank_data(app_handle, start_date, end_date, keyword_id):
     print('hey am inside get_app_rank_data')
 
     result = []
     shopify_apps_rank = AppRank.objects.filter(
         shopify_app_id=app_handle,
+        keyword_id=keyword_id,
         created_at__range=[start_date, end_date]
     ).values_list('rank', 'created_at')
     for i in shopify_apps_rank:
         x = {
             'app_handle': app_handle,
-            # 'dev_by': dev_by,
             'rank': i[0],
             'created_at': i[1]
         }

@@ -3,6 +3,7 @@ from urllib import parse
 from bs4 import BeautifulSoup
 
 from apps.app_rank.constants import ScrapedHTMLStatus, SessionType
+from apps.app_rank.exceptions import TaskInterruptedDueToAnException
 from apps.app_rank.models import ScrapedHTML, ShopifyApp, AppRank
 from apps.app_rank.processors.html_app_page_processor import HTMLAppPageProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
@@ -79,7 +80,7 @@ class HTMLBrowsePageProcessor:
                     'details': f'Error occurred while processing page no = {each_page.page_no}'
                 }
                 SessionManagerService().process_failed_session(self.session_id, error_msg)
-                return
+                raise TaskInterruptedDueToAnException
         AppRank.objects.bulk_create(self.app_ranks)
         SessionManagerService().update_session(session_id=self.session_id,
                                                details=f'{SessionType.HTML_PROCESSOR} has completed')

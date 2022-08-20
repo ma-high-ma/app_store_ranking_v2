@@ -44,3 +44,7 @@ class NoCompletedRankDeltaProcessorFound(Exception):
     def __init__(self):
         self.message = "No Rank Delta Processor session found with status = completed"
         super().__init__(self.message)
+
+
+class TaskInterruptedDueToAnException(Exception):
+    pass

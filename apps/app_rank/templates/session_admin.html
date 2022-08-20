@@ -1,0 +1,27 @@
+{% extends 'admin/change_list.html' %}
+
+{% block object-tools %}
+    <div>
+        <form id="run-task-form" method="POST">
+            {% csrf_token %}
+            <input name="keyword" class="vTextField">
+            <button type="submit">Process ranks for this Keyword</button>
+        </form>
+    </div>
+    <br/>
+    <div>
+        <form action="cancel_task/" method="POST">
+            {% csrf_token %}
+            <button type="submit">Cancel current Task</button>
+        </form>
+    </div>
+
+    <script>
+        let runTaskForm = document.querySelector('#run-task-form')
+        runTaskForm.querySelector('input[name="keyword"]').addEventListener('change', function (e) {
+            let keyword = e.target.value
+            runTaskForm.action = 'run_task/' + keyword + ''
+        })
+    </script>
+    {{ block.super }}
+{% endblock %}

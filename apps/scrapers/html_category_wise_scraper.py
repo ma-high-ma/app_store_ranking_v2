@@ -7,4 +7,6 @@ class HTMLCategoryWiseScraper(HTMLBrowsePageScraper):
         self.keyword = keyword
 
     def get_url(self):
+        if self.keyword == 'global':
+            return f'https://apps.shopify.com/browse/'
         return f'https://apps.shopify.com/browse/{self.keyword}/'

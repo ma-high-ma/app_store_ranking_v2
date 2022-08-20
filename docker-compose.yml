@@ -21,3 +21,20 @@ services:
       - ranking-db
     env_file:
       - .env
+
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  celery:
+    build: .
+    command: celery -A app_store_ranking_v2 worker -l info
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - rabbitmq
+    env_file:
+      - .env

@@ -1,5 +1,5 @@
 from apps.app_rank.constants import SessionStatus, SessionType
-from apps.app_rank.exceptions import NoPreviousAppRankForGivenKeyword
+from apps.app_rank.exceptions import NoPreviousAppRankForGivenKeyword, TaskInterruptedDueToAnException
 from apps.app_rank.models import AppRank, Session, ShopifyApp, RankDelta
 from apps.app_rank.services.SessionManager import SessionManagerService
 
@@ -68,7 +68,7 @@ class RankDeltaProcessor:
                 'details': f'Error occurred during rank delta processing'
             }
             SessionManagerService().process_failed_session(self.session_id, error_msg)
-            return
+            raise TaskInterruptedDueToAnException
         RankDelta.objects.bulk_create(self.rank_delta_objs)
         SessionManagerService().update_session(self.session_id,
                                                details=f'{SessionType.RANK_DELTA_PROCESSOR} has completed')
