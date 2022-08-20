@@ -20,3 +20,6 @@ class AppRankProcessor:
 
         SessionManagerService().update_session(self.session_id, SessionStatus.COMPLETED,
                                                details=f'{SessionType.APP_RANK_PROCESSOR} has completed')
+
+        print('hey')
+       
