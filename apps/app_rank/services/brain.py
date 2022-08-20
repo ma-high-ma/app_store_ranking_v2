@@ -5,8 +5,8 @@ from apps.app_rank.processors.app_data_delta_processor import AppDataDeltaProces
 from apps.app_rank.processors.app_rank_processor import AppRankProcessor
 from apps.app_rank.processors.html_app_page_processor import HTMLAppPageProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
-from apps.app_rank.services.html_app_page_scraper import HTMLAppPageScraper
-from apps.app_rank.services.html_browse_page_scraper import HTMLBrowsePageScraper
+from apps.scrapers.html_app_page_scraper import HTMLAppPageScraper
+from apps.scrapers.html_category_wise_scraper import HTMLCategoryWiseScraper
 
 
 class Brain:
@@ -14,12 +14,19 @@ class Brain:
         session_ids = []
         # Global App Rank
 
-        keyword, created = Keyword.objects.get_or_create(keyword='global')
+        keyword, created = Keyword.objects.get_or_create(keyword='store-management')
 
         # Scrape HTML of browse apps page
+        # session_id = SessionManagerService.create_session(SessionType.HTML_SCRAPER)
+        # session_ids.append(session_id)
+        # HTMLBrowsePageScraper(session_id).scrape_page(
+        #     start_page_no=1,
+        #     last_page_no=5
+        # )
+
         session_id = SessionManagerService.create_session(SessionType.HTML_SCRAPER)
         session_ids.append(session_id)
-        HTMLBrowsePageScraper(session_id).scrape_page(
+        HTMLCategoryWiseScraper(session_id, keyword=keyword.keyword).scrape_page(
             start_page_no=1,
             last_page_no=5
         )

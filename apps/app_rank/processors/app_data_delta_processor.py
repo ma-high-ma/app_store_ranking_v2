@@ -3,7 +3,7 @@ from apps.app_rank.exceptions import NoPreviousAppDataPresent, NoCompletedRankDe
 from apps.app_rank.models import Session, RankDelta, ScrapedHTML, AppData
 from apps.app_rank.processors.html_app_page_processor import HTMLAppPageProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
-from apps.app_rank.services.html_app_page_scraper import HTMLAppPageScraper
+from apps.scrapers.html_app_page_scraper import HTMLAppPageScraper
 
 
 class AppDataDeltaProcessor:

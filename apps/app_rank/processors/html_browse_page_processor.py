@@ -6,7 +6,7 @@ from apps.app_rank.constants import ScrapedHTMLStatus, SessionType
 from apps.app_rank.models import ScrapedHTML, ShopifyApp, AppRank
 from apps.app_rank.processors.html_app_page_processor import HTMLAppPageProcessor
 from apps.app_rank.services.SessionManager import SessionManagerService
-from apps.app_rank.services.html_app_page_scraper import HTMLAppPageScraper
+from apps.scrapers.html_app_page_scraper import HTMLAppPageScraper
 
 
 class HTMLBrowsePageProcessor:
