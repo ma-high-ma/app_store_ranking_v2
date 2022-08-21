@@ -1,4 +1,4 @@
-from celery.worker.control import revoke
+import schedule
 from django.contrib import admin
 # Register your models here.
 from django.http import HttpResponseRedirect
@@ -8,6 +8,7 @@ from app_store_ranking_v2.celery import app as celery_app
 from app_store_ranking_v2.task_names import SCRAPE_AND_PROCESS_APP_RANKS
 from apps.app_rank.models import ShopifyApp, Keyword, AppData, Session, AppRank, ScrapedHTML, RankDelta
 from apps.app_rank.models.error_log import ErrorLog
+from apps.app_rank.services.brain import process
 
 
 @admin.register(ShopifyApp)
@@ -48,21 +49,23 @@ class SessionAdmin(admin.ModelAdmin):
 
     # This method does not work
     def cancel_task(self, request):
+        schedule.cancel_job(process)
+        self.message_user(request, 'Task Canceled')
+        # # task = celery_app.Task.request
         # task = celery_app.Task.request
-        task = celery_app.Task.request
-        # revoke(task_id='abc', terminate=True, state=states.REVOKED)
-        # self.message_user(request, 'Task Canceled')
-        # task = celery_app.current_task
-        print('task = ', task)
-        # task_id = current_task.request.id
-        if task:
-            task_id = task.id
-            print('task_id = ', task_id)
-            revoke(task_id, terminate=True)
-            self.message_user(request, 'Task Canceled')
-        else:
-            self.message_user(request, 'Task = None')
-        return HttpResponseRedirect("../")
+        # # revoke(task_id='abc', terminate=True, state=states.REVOKED)
+        # # self.message_user(request, 'Task Canceled')
+        # # task = celery_app.current_task
+        # print('task = ', task)
+        # # task_id = current_task.request.id
+        # if task:
+        #     task_id = task.id
+        #     print('task_id = ', task_id)
+        #     revoke(task_id, terminate=True)
+        #     self.message_user(request, 'Task Canceled')
+        # else:
+        #     self.message_user(request, 'Task = None')
+        # return HttpResponseRedirect("../")
 
 
 @admin.register(AppRank)
