@@ -47,7 +47,7 @@ def process():
         Brain().cron_logic(keyword_title=each_keyword)
 
 
-job = schedule.every().day.at("8:25").do(process)
+job = schedule.every().day.at("8:30").do(process)
 
 while True:
     schedule.run_pending()
