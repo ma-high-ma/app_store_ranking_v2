@@ -4,11 +4,9 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import path
 
-from app_store_ranking_v2.celery import app as celery_app
-from app_store_ranking_v2.task_names import SCRAPE_AND_PROCESS_APP_RANKS
 from apps.app_rank.models import ShopifyApp, Keyword, AppData, Session, AppRank, ScrapedHTML, RankDelta
 from apps.app_rank.models.error_log import ErrorLog
-from apps.app_rank.services.brain import process
+from apps.app_rank.services.brain import process, Brain
 
 
 @admin.register(ShopifyApp)
@@ -42,7 +40,8 @@ class SessionAdmin(admin.ModelAdmin):
 
     def trigger_task(self, request, keyword='global'):
         print('keyword=', keyword)
-        celery_app.send_task(name=SCRAPE_AND_PROCESS_APP_RANKS, args=(keyword,))
+        Brain().cron_logic()
+        # celery_app.send_task(name=SCRAPE_AND_PROCESS_APP_RANKS, args=(keyword,))
 
         self.message_user(request, 'Task Triggered')
         return HttpResponseRedirect("../")

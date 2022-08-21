@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'collectfast',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,7 +46,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,7 +77,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'app_store_ranking_v2.wsgi.application'
 
-CELERY_BROKER_URL = os.environ.get("RABBITMQ_URL")
+# CELERY_BROKER_URL = os.environ.get("RABBITMQ_URL")
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
