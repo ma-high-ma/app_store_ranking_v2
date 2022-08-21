@@ -1,3 +1,5 @@
+import schedule
+
 from apps.app_rank.constants import SessionType, SessionStatus
 from apps.app_rank.exceptions import PageNotScrapedSuccessfully
 from apps.app_rank.models import Keyword, ScrapedHTML, ShopifyApp, Session
@@ -40,7 +42,16 @@ class Brain:
                 each_obj.save()
 
 
-def adhoc_app_data_processor_logic(self):
+def process():
+    keywords = Keyword.objects.all().values_list('keyword')
+    for each_keyword in keywords:
+        Brain().cron_logic(keyword_title=each_keyword)
+
+
+schedule.every().day.at("13:30").do(process)
+
+
+def adhoc_app_data_processor_logic():
     # Scrape all App HTML Pages
     session_id = SessionManagerService.create_session(SessionType.HTML_SCRAPER)
     ScrapedHTML.objects.all().delete()
